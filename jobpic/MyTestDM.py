@@ -7,6 +7,7 @@ from scrapy.exceptions import IgnoreRequest
 
 class MyTestMiddleware(object):
 
+    def __init__(self, data):
         self.data = data
 
     @classmethod
