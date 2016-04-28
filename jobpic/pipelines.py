@@ -8,7 +8,7 @@
 from handler import handler
 import json
 
-class IthotPipeline(object):
+class jobpicPipeline(object):
     def process_item(self, item, spider):
         handler.delay(json.dumps(dict(item)))
         return item

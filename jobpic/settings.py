@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Scrapy settings for ithot project
+# Scrapy settings for jobpic project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -9,14 +9,14 @@
 #     http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 #     http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'ithot'
+BOT_NAME = 'jobpic'
 
-SPIDER_MODULES = ['ithot.spiders']
-NEWSPIDER_MODULE = 'ithot.spiders'
+SPIDER_MODULES = ['jobpic.spiders']
+NEWSPIDER_MODULE = 'jobpic.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'ithot (+http://www.yourdomain.com)'
+#USER_AGENT = 'jobpic (+http://www.yourdomain.com)'
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS=32
@@ -44,14 +44,14 @@ NEWSPIDER_MODULE = 'ithot.spiders'
 # Enable or disable spider middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    'ithot.middlewares.MyCustomSpiderMiddleware': 543,
+#    'jobpic.middlewares.MyCustomSpiderMiddleware': 543,
 #}
 
 #DOWNLOADER_MT=True
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'ithot.middlewares.MyTestDM.MyTestMiddleware': 543,
+    'jobpic.middlewares.MyTestDM.MyTestMiddleware': 543,
 }
 
 # Enable or disable extensions
@@ -63,7 +63,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'ithot.pipelines.IthotPipeline': 300,
+    'jobpic.pipelines.jobpicPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

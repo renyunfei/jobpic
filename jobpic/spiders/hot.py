@@ -2,8 +2,9 @@
 import scrapy
 import json
 import requests
+from requests import ConnectionError, HTTPError, Timeout
 from urllib import urlencode, quote
-from ithot.items import IthotItem
+from jobpic.items import IthotItem
 from scrapy.loader import ItemLoader
 from scrapy import log
 
@@ -14,8 +15,11 @@ class JobpicSpider(scrapy.Spider):
         'http://www.lagou.com',
     )
 
+    cities = []
+
     def __init__(self, category=None, *args, **kwargs):
-        log.start(logfile='log/jobpic.log')
+        for city in open('city.txt', 'r'):
+            self.cities.append(city.strip())
 
     def parse(self, response):
         xp = '//*[@id="sidebar"]/div[1]/div/div/dl/dd/a/text()'
@@ -23,15 +27,16 @@ class JobpicSpider(scrapy.Spider):
         for sel in response.xpath(xp).extract():
             item=IthotItem()
             kd = quote(sel.encode('utf-8'))
-            city = '%E4%B8%8A%E6%B5%B7'
 
-            for result in self._get_jobs(city, kd):
-                for item in result:
-                    item['kd'] = kd
+            for city in self.cities:
+                for result in self._get_jobs(city, kd):
+                    for item in result:
+                        pd = item['positionId']
+                        item['kd'] = kd
 
-                    job_url = 'http://www.lagou.com/jobs/' + str(pd) + '.html'
-                    yield scrapy.Request(url=job_url, meta = item,
-                            callback=self.parse_detail, errback=self._err_process)
+                        job_url = 'http://www.lagou.com/jobs/' + str(pd) + '.html'
+                        yield scrapy.Request(url=job_url, meta = item,
+                                callback=self.parse_detail, errback=self._err_process)
 
 
     def _get_jobs(self, city, kd):
@@ -40,14 +45,14 @@ class JobpicSpider(scrapy.Spider):
         page = 0
         totalpage = 1
 
-        while page < totalpage:
+        while page <= totalpage:
             page += 1
             data['pn'] = page
 
-            try:
-                r = requests.post(url, data)
-            except ConnectionError, HTTPError, Timeout:
-                log.msg('send request for get detail error', level=log.ERROR)
+            #try:
+            r = requests.post(url, data)
+            #except ConnectionError, HTTPError, Timeout:
+            #    log.msg('send request for get detail error', level=log.ERROR)
 
             result = json.loads(r.text.encode('utf-8'))['content']['result']
             if not totalpage:
