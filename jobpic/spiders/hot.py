@@ -5,13 +5,17 @@ import requests
 from urllib import urlencode, quote
 from ithot.items import IthotItem
 from scrapy.loader import ItemLoader
+from scrapy import log
 
-class ExampleSpider(scrapy.Spider):
-    name = "hot"
+class JobpicSpider(scrapy.Spider):
+    name = "jobpic"
     allowed_domains = ["lagou.com"]
     start_urls = (
         'http://www.lagou.com',
     )
+
+    def __init__(self, category=None, *args, **kwargs):
+        log.start(logfile='log/jobpic.log')
 
     def parse(self, response):
         xp = '//*[@id="sidebar"]/div[1]/div/div/dl/dd/a/text()'
@@ -19,35 +23,44 @@ class ExampleSpider(scrapy.Spider):
         for sel in response.xpath(xp).extract():
             item=IthotItem()
             kd = quote(sel.encode('utf-8'))
-
             city = '%E4%B8%8A%E6%B5%B7'
-            data = {'first':'false', 'pn':1, 'kd':kd}
 
-            #while True:
-            i = 1
-            data['pn'] = i
+            for result in self._get_jobs(city, kd):
+                for item in result:
+                    item['kd'] = kd
 
-            url = 'http://www.lagou.com/jobs/positionAjax.json?city=' + city
-            r = requests.post(url, data)
-            #if not r.text:
-            #    continue
+                    job_url = 'http://www.lagou.com/jobs/' + str(pd) + '.html'
+                    yield scrapy.Request(url=job_url, meta = item,
+                            callback=self.parse_detail, errback=self._err_process)
 
-            ret = json.loads(r.text.encode('utf-8'))
 
-            result = ret['content']['result']
-            for item in result:
-                pd = item['positionId']
+    def _get_jobs(self, city, kd):
+        data = {'first':'false', 'pn':None, 'kd':kd}
+        url = 'http://www.lagou.com/jobs/positionAjax.json?city=' + city
+        page = 0
+        totalpage = 1
 
-                job_url = 'http://www.lagou.com/jobs/' + str(pd) + '.html'
-                yield scrapy.Request(url=job_url, meta = {'pd':pd, 'kd':kd},
-                        callback=self.parse_detail, errback=self._err_process)
+        while page < totalpage:
+            page += 1
+            data['pn'] = page
+
+            try:
+                r = requests.post(url, data)
+            except ConnectionError, HTTPError, Timeout:
+                log.msg('send request for get detail error', level=log.ERROR)
+
+            result = json.loads(r.text.encode('utf-8'))['content']['result']
+            if not totalpage:
+                totalpage = json.loads(r.text.encode('utf-8'))['content']['totalPageCount']
+
+            yield result
 
     def _err_process(self):
-        print 'request error'
+        log.msg('send request for get detail error', level=log.ERROR)
 
     def parse_detail(self, response):
 
-        pd = response.meta['pd']
+        pd = response.meta['positionId']
         kd = response.meta['kd']
         l = ItemLoader(item=IthotItem(), response=response)
         l.add_xpath('salary', '//*[@id="job_detail"]/dd[1]/p[1]/span[1]/text()')
